@@ -2,17 +2,22 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import Planet from './Planet';
 
-const fetchPlanets = async () => {
+const fetchPlanets = async (key, greeting) => {
+  console.log(greeting);
   const res = await fetch('https://swapi.dev/api/planets/');
   return res.json();
 };
 
 const Planets = () => {
-  const { data, status } = useQuery('planets', fetchPlanets, {
-    // defualt staletime is 0
-    staleTime: 2000,
-    onSuccess: () => console.log('data fetched')
-  });
+  const { data, status } = useQuery(
+    ['planets', 'Hey, Mr Stark'],
+    fetchPlanets,
+    {
+      // defualt staletime is 0
+      staleTime: 2000,
+      onSuccess: () => console.log('data fetched')
+    }
+  );
 
   return (
     <div>
