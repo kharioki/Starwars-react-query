@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { useQuery } from 'react-query';
+import { usePaginatedQuery } from 'react-query';
 import Planet from './Planet';
 
-const fetchPlanets = async (key, greeting, page) => {
-  console.log(greeting);
+const fetchPlanets = async (key, page) => {
   const res = await fetch(`https://swapi.dev/api/planets/?page=${page}`);
   return res.json();
 };
@@ -11,39 +10,50 @@ const fetchPlanets = async (key, greeting, page) => {
 const Planets = () => {
   const [page, setPage] = useState(1);
 
-  const { data, status } = useQuery(
-    ['planets', 'Hey, Mr Stark', page],
-    fetchPlanets,
-    {
-      // defualt staletime is 0
-      staleTime: 2000,
-      // you can use callback functions
-      onSuccess: () => console.log('data fetched')
-    }
+  const { resolvedData, latestData, status } = usePaginatedQuery(
+    ['planets', page],
+    fetchPlanets
   );
 
   return (
     <div>
       <h2>Planets</h2>
 
-      <button onClick={() => setPage(prevPage => prevPage - 1)}>
-        Prev Page
-      </button>
-      <span> {page} </span>
-      <button onClick={() => setPage(prevPage => prevPage + 1)}>
-        Next Page
-      </button>
-
       {status === 'loading' && <div>Loading data...</div>}
 
       {status === 'error' && <div>Error fetching data</div>}
 
       {status === 'success' && (
-        <div>
-          {data.results.map(planet => (
-            <Planet key={planet.name} planet={planet} />
-          ))}
-        </div>
+        <>
+          <button
+            onClick={() =>
+              setPage(prevPage =>
+                // if on page 1, it returns page 1
+                Math.max(prevPage - 1, 1)
+              )
+            }
+            disabled={page === 1}
+          >
+            Prev Page
+          </button>
+          <span> {page} </span>
+          <button
+            onClick={() =>
+              setPage(prevPage =>
+                // if we dont have a next page data, we stay on page else we go to next page
+                !latestData || !latestData.next ? prevPage : prevPage + 1
+              )
+            }
+            disabled={!latestData || !latestData.next}
+          >
+            Next Page
+          </button>
+          <div>
+            {resolvedData.results.map(planet => (
+              <Planet key={planet.name} planet={planet} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
