@@ -9,6 +9,9 @@ import Vehicles from './components/Vehicles';
 import Starships from './components/Starships';
 import Species from './components/Species';
 
+//TODO: Add infinite scrolling functionalities and replace pagination on different results
+//TODO: Add unit tests for paginated queries
+
 function App() {
   const [page, setPage] = useState('planets');
   
